@@ -34,14 +34,10 @@ def GBK():
             print(f'kamu menang, komputer memegang {komputer}')
         elif (komputer==listGBK[2]) and (user==listGBK[0]):
             print(f'kamu menang, komputer memegang {komputer}')
-        elif (komputer==listGBK[1]) and (user==listGBK[0]):
-            print(f'kamu kalah, komputer memegang {komputer}')
-        elif (komputer==listGBK[2]) and (user==listGBK[1]):
-            print(f'kamu kalah, komputer memegang {komputer}')
-        elif (komputer==listGBK[0]) and (user==listGBK[2]):
-            print(f'kamu kalah, komputer memegang {komputer}')
-        else:
+        elif komputer==user:
             print(f'seri, komputer memegang {komputer}')
+        else:
+            print(f'kamu kalah, komputer memegang {komputer}')
     except (ValueError,IndexError) :
         print('hanya masukan angka 1, 2, 3')
         GBK()
@@ -67,6 +63,6 @@ def kalkulator():
             print(f'operator salah, hasil akhir adalah {all} = {eval(all)}')
             break
     
-    
+
 
 kalkulator()
