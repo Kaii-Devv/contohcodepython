@@ -1,0 +1,133 @@
+1. LOGIN dan INSTALL DNS
+	masukan username [enter]
+	masukan password [enter] (password tidak akan terlihat ketika di ketik)
+	# su
+		perintah "su" untuk masuk ke mode SuperUser
+	# apt install bind9
+		"apt install <package>" untuk menginstall package yang di butuhkan
+	# cd /etc/bind/
+		"cd" untuk masuk ke direktori, "/etc/bind" adalah direktori configurasi bind
+	# cat /etc/network/interface
+		"cat" untuk mencetak isi dari sebuah file, disini untuk melihat settingan IP debian
+	# nano named.conf.default-zones
+		"nano" untuk melihat dan mengedit file
+		edit file "named.conf.default-zones" 
+
+			zone "." {
+					type hint;
+					file "/usr/share/dns/root.hints";
+			};
+			// "idris.net" adalah domain, sesuaikan jika nama domain berbeda
+			zone "idris.net" {
+					type master;
+					// db.idris adalah nama file yang akan di copy dari db.local . sesuaikan jika nama file berbeda
+					file "/etc/bind/db.idris";
+			};
+			// "100.168.192" adalah IP yang oktet terakhir nya di hilangkan lalu di balik urutan nya, yang asalnya 192.168.100.2. sesuaikan jika IP berbeda
+			zone "100.168.192.in-addr.arpa" {
+					type master;
+					// db.172 adalah nama file yang akan di copy dari db.127. sesuaikan jika nama file berbeda
+					file "/etc/bind/db.172";
+			};
+		lalu save (CTRL+X, Y, [enter])
+	# cp db.local db.idris 
+	# cp db.127 db.172
+		"cp" untuk menge copy file menjadi mana yang berbeda "db.local" adalah nama file yang akan di copy. "db.idris" adalah nama file yang nantinya akan menjadi copy-an db.local
+	# nano db.idris 
+		"db.idris" harus sama dengan file hasil copy-an dari file db.local
+		edit file "db.idris" dengan menfubah semua text localhost manjadi nama domain. dan 127.0.0.1 menjadi IP
+
+			;
+			; BIND data file for local loopback interface
+			;
+			$TTL	604800
+			@	   IN	  SOA	 idris.net. root.idris.net. (
+										2		 ; Serial
+									604800		 ; Refresh
+									86400		 ; Retry
+									2419200		 ; Expire
+									604800 )	   ; Negative Cache TTL
+			;
+			@	   IN	  NS	  idris.net.
+			@	   IN	  A	   192.168.100.2
+			www	 IN	  A	   192.168.100.2
+			tes	 IN	  A	   192.168.100.2
+		lalu save (CTRL+X, Y, [enter])
+	# nano db.172
+		"db.172" harus sama dengan file hasil copy-an dari file db.127
+		edit file "db.172" dengan menfubah semua text localhost manjadi nama domain. dan 1.0.0 menjadi oktet terakhir IP
+			;
+			; BIND reverse data file for local loopback interface
+			;
+			$TTL	604800
+			@	   IN	  SOA	 idris.net. root.idris.net. (
+										1		 ; Serial
+									604800		 ; Refresh
+									86400		 ; Retry
+									2419200		 ; Expire
+									604800 )	   ; Negative Cache TTL
+			;
+			@	   IN	  NS	  idris.net.
+			2	   IN	  PTR	 idris.net.
+			2	   IN	  PTR	 www.idris.net.
+			2	   IN	  PTR	 tes.idris.net.
+		lalu save (CTRL+X, Y, [enter])
+	sekarang restart bind9 yang sudah di configurasi, ada 3 perintah yang jika salah satu nya error maka coba yang lain nya
+		# /etc/init.d/bind9 restart
+		# service bind9 restart
+		# /usr/sbin/service bind9 restart
+	Coba salahsatu yang tidak error dari ketiga perintah di atas
+
+	# apt install dnsutils
+	# nslookup idris.net
+		hasilnya tidak boleh "SERVAIL" atau time out
+
+		Server:		 192.168.100.2
+		Address:		192.168.100.2#53
+
+		Name:   idris.net
+		Address: 192.168.100.2
+
+
+2. INSTALL WebServer menggunakan NGINX
+	# apt install nginx
+	# nano /var/www/html/index.html
+		edit file dengan masukan text bebas
+		lalu save (CTRL+X, Y, [enter])
+	lanjut lihat video di menit 19:00 sampai www.idris.net bisa di akses di browser host (windows)
+
+
+3. Remote Server Menggunakan ssh dan software Putty (windows)
+	# apt install ssh
+	# nano /etc/ssh/sshd_config
+		edit file dengan menambahkan text ini di bawah text Include:
+
+		Port 22
+		PermitRootLogin no
+
+		lalu save (CTRL+X, Y, [enter])
+	# service ssh restart
+		jika error gunakan cara restart seperti 3 cara sebelumnya
+	
+	lanjut lihat video di menit 21:40 sampai bisa login debian di Putty
+
+4. Transfer File menggunakan VSFTPD
+	# apt install vsftpd
+	# nano /etc/vsftpd.conf
+		cari text #write_enable=YES lalu hapus pagar nya
+
+		lalu save (CTRL+X, Y, [enter])
+	# service vsftpd restart
+		jika error gunakan cara restart seperti 3 cara sebelumnya
+	
+	# adduser forftp
+		"adduser" untuk menambah user baru pada debian
+	
+	coba buka WinSCP dan login menggunakan username forftp seperti di video menit 24:00 dan coba hapus file "/var/www/html/index.html" seharusnya ini tidak bisa karna user forftp tidak memiliki akses ke file itu
+
+	# chmod 777 -R /var/www/html/
+		"chmod" untuk mengubah ijin sebuah file atau folder, "777" untuk akses penuh (read, write,execute)
+	# chown forftp:users /var/www/html/
+		"chown" untuk mengubah kepemilikan sebuah file atau folder, "forftp:users" adalah username:group
+	
+	sekarang seharusnya sudah bisa mengedit, menghapus dan menambah file di folder /var/www/html menggunakan WinSCP 
